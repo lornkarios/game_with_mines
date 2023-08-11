@@ -1,0 +1,39 @@
+version: '2.1'
+
+services:
+  nginx:
+    image: nginx:stable-alpine
+    privileged: true
+    environment:
+      NGINX_HOST: localhost
+    ports:
+      - "$PORT:80"
+    networks:
+      - mine_network
+    volumes:
+      - ./docker/nginx/s1.conf:/etc/nginx/conf.d/default.conf
+      - ./app:/app
+    env_file:
+      - .env
+  app:
+    build:
+      context: ./
+      dockerfile: ./docker/php/Dockerfile
+      args:
+        XDEBUG_FLAG: $XDEBUG_FLAG
+    volumes:
+      - ./app:/app
+    networks:
+      - mine_network
+    env_file:
+      - .env
+  frontend:
+    image: node:20.5.1
+    volumes:
+      - ./app:/app
+    working_dir: /app
+    tty: true
+networks:
+  mine_network:
+    driver:
+      bridge
